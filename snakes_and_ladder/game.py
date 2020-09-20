@@ -82,7 +82,6 @@ class Player:
 	def __init__(self):
 		self.id = Player.playerId
 		Player.playerId += 1
-		self.position = BOARD_START_POS
 
 	def getPlayerId(self):
 		return self.id
@@ -120,12 +119,13 @@ class GameService:
 
 				if self.isWinner(board.getPlayerCurrentPosition(playerId)):
 					time.sleep(3)
-					print(Fore.RESET + "********* Player {}'s turn end *********".format(playerId))
+					print(Fore.MAGENTA + "Player {} won...Congratulations *********".format(playerId))
 					print(Fore.RESET + "Game Over".format(playerId))
 					gameOn = False
 					break
 
-				print(Fore.RESET + "********* Player {}'s turn end *********".format(playerId))
+				if gameOn:
+					print(Fore.RESET + "********* Player {}'s turn end *********".format(playerId))
 			if not gameOn:
 				break
 
