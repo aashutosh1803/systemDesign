@@ -41,7 +41,7 @@ class Board:
 		self.endPosition = BOARD_END_POS
 		self.snakes = Snake().getSnakes()
 		self.ladders = Ladder().getLadder()
-		self.playerPieces = defaultdict(lambda: 0)
+		self.playerPieces = defaultdict(lambda: BOARD_START_POS)
 
 		if not self.isBoardValid():
 			raise Exception("Sorry, Board is not valid")
