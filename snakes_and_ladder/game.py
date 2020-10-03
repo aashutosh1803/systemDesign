@@ -34,7 +34,7 @@ class Dice:
 		return random.randint(1, 6)
 
 
-class Board:
+class SnakeAndLadderBoard():
 
 	def __init__(self):
 		self.startPosition = BOARD_START_POS
@@ -42,6 +42,7 @@ class Board:
 		self.snakes = Snake().getSnakes()
 		self.ladders = Ladder().getLadder()
 		self.playerPieces = defaultdict(lambda: BOARD_START_POS)
+		super(SnakeAndLadderBoard, self).__init__()
 
 		if not self.isBoardValid():
 			raise Exception("Sorry, Board is not valid")
@@ -55,12 +56,21 @@ class Board:
 				return False
 		return True
 
-	def updatePlayerPieces(self, playerId, playerPosition, reason):
-		if reason == PLAYER_MOVE_DICE_REASON:
-			if self.playerPieces[playerId] + playerPosition <= BOARD_END_POS:
-				self.playerPieces[playerId] += playerPosition
+	def updatePlayerPieces(self, playerId, playerPosition):
+		if self.playerPieces[playerId] + playerPosition <= BOARD_END_POS:
+			self.playerPieces[playerId] += playerPosition
 		else:
-			self.playerPieces[playerId] = playerPosition
+			return
+
+		if self.relevantSnake(self.getPlayerCurrentPosition(playerId)):
+			time.sleep(3)
+			self.playerPieces[playerId] = self.relevantSnake(self.playerPieces[playerId])
+			print(Fore.RED + "Snake Present...  and dropped player to number {}".format(self.getPlayerCurrentPosition(playerId)))
+
+		if self.relevantLadder(self.getPlayerCurrentPosition(playerId)):
+			time.sleep(3)
+			self.playerPieces[playerId] = self.relevantLadder(self.playerPieces[playerId])
+			print(Fore.GREEN + "Ladder Present...  and lifted player to number {}".format(self.getPlayerCurrentPosition(playerId)))
 
 	def getPlayerCurrentPosition(self, playerId):
 		return self.playerPieces[playerId]
@@ -95,27 +105,16 @@ class GameService:
 		while gameOn:
 			for player in players:
 				playerId = player.getPlayerId()
-				playerPos = board.getPlayerCurrentPosition(playerId)
-				print(Fore.RESET + "********* Player {} is playing *********".format(playerId))
-				print(Fore.RESET + "Currently on number {} in Board".format(playerPos))
+				print(Fore.RESET + "********* Player {} is playing *********".format(player.getPlayerId()))
+				print(Fore.RESET + "Currently on number {} in Board".format(board.getPlayerCurrentPosition(playerId)))
 
 				time.sleep(3)
 				diceNum = dice.getDiceNumber()
 				print(Fore.RESET + "Dice Rolling and Number on Dice is .... {}".format(diceNum))
 
 				time.sleep(3)
-				board.updatePlayerPieces(playerId, diceNum, PLAYER_MOVE_DICE_REASON)
+				board.updatePlayerPieces(playerId, diceNum)
 				print(Fore.RESET + "Moved to number {}".format(board.getPlayerCurrentPosition(playerId)))
-
-				if board.relevantSnake(board.getPlayerCurrentPosition(playerId)):
-					time.sleep(3)
-					board.updatePlayerPieces(playerId, board.relevantSnake(board.getPlayerCurrentPosition(playerId)), PLAYER_MOVE_SNAKE_REASON)
-					print(Fore.RED + "Snake Present...  and dropped player to number {}".format(board.getPlayerCurrentPosition(playerId)))
-
-				if board.relevantLadder(board.getPlayerCurrentPosition(playerId)):
-					time.sleep(3)
-					board.updatePlayerPieces(playerId, board.relevantLadder(board.getPlayerCurrentPosition(playerId)), PLAYER_MOVE_LADDER_REASON)
-					print(Fore.GREEN + "Ladder Present...  and lifted player to number {}".format(board.getPlayerCurrentPosition(playerId)))
 
 				if self.isWinner(board.getPlayerCurrentPosition(playerId)):
 					time.sleep(3)
@@ -135,7 +134,7 @@ class GameService:
 
 def game():
 	players = [Player() for i in range(0, NUMBER_OF_PLAYERS)]
-	board = Board()
+	board = SnakeAndLadderBoard()
 	dice = Dice()
 	gameService = GameService()
 	gameService.startGame(board, players, dice)
